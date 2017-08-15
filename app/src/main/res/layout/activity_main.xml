@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.byteshaft.locationupdate.MainActivity">
+    
+    <EditText
+        android:id="@+id/device_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/device_id"
+        android:background="@android:drawable/edit_text"
+        android:layout_margin="5dp"
+        android:enabled="false"
+        android:layout_centerHorizontal="true"
+        />
+
+    <EditText
+        android:id="@+id/enterprise_id"
+        android:layout_below="@+id/device_id"
+        android:hint="@string/enterprise_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:background="@android:drawable/edit_text"
+        android:layout_margin="5dp"
+        android:layout_centerHorizontal="true"
+        />
+
+
+    <Button
+        android:id="@+id/toggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="15dp"
+        android:textColor="@android:color/white"
+        android:text="@string/start_tracking"
+        android:background="@drawable/round_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="5dp"
+        android:layout_alignParentBottom="true"/>
+</RelativeLayout>
