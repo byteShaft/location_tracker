@@ -61,7 +61,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         Notification notification = new NotificationCompat.Builder(this)
                 .setSmallIcon(android.R.drawable.ic_menu_mylocation)
                 .setContentTitle(getResources().getString(R.string.app_name))
-                .setContentText("State: Running")
+                .setContentText(getResources().getString(R.string.tracking))
                 .setContentIntent(pendingIntent).build();
 
         startForeground(NOTIFICATION_ID, notification);

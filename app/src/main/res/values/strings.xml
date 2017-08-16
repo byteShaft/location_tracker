@@ -6,4 +6,5 @@
     <string name="no_internet">Internet not available</string>
     <string name="stop_tracking">Stop tracking</string>
     <string name="fill_details">please fill above details</string>
+    <string name="tracking">Tracking…</string>
 </resources>
