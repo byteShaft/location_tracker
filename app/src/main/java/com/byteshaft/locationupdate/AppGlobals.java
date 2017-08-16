@@ -16,6 +16,7 @@ public class AppGlobals extends Application {
     private static final String KEY_ENTERPRISE_ID = "enterprise_id";
     public static final String KEY_TRACKING = "tracking";
     public static boolean isInternetPresent = false;
+    public static boolean checkingInternet = false;
 
     @Override
     public void onCreate() {

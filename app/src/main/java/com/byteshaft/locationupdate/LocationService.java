@@ -24,8 +24,6 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 import java.net.HttpURLConnection;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 
 /**
  * Created by s9iper1 on 5/21/17.
@@ -54,12 +52,11 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
         buildGoogleApiClient();
         mGoogleApiClient.connect();
         Intent notificationIntent = new Intent(this, MainActivity.class);
-
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
                 notificationIntent, 0);
 
         Notification notification = new NotificationCompat.Builder(this)
-                .setSmallIcon(android.R.drawable.ic_menu_mylocation)
+                .setSmallIcon(R.mipmap.location)
                 .setContentTitle(getResources().getString(R.string.app_name))
                 .setContentText(getResources().getString(R.string.tracking))
                 .setContentIntent(pendingIntent).build();
@@ -148,8 +145,10 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                 MainActivity.getInstance().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(MainActivity.getInstance(), getResources().getString(
-                                R.string.no_internet), Toast.LENGTH_SHORT).show();
+                        if (AppGlobals.checkingInternet) {
+                            Toast.makeText(MainActivity.getInstance(), getResources().getString(
+                                    R.string.no_internet), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
             }
@@ -168,6 +167,7 @@ public class LocationService extends Service implements GoogleApiClient.Connecti
                             case HttpURLConnection.HTTP_OK:
                                 Log.i("TAG", "Got 200");
                                 if (MainActivity.getInstance().foreground) {
+
                                 }
                                 break;
                             case HttpURLConnection.HTTP_BAD_REQUEST:

@@ -60,6 +60,7 @@ public class InternetBroadCastReceiver extends BroadcastReceiver {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
+            AppGlobals.checkingInternet = true;
             return isInternetWorking();
         }
 
@@ -67,6 +68,7 @@ public class InternetBroadCastReceiver extends BroadcastReceiver {
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
             AppGlobals.isInternetPresent = aBoolean;
+            AppGlobals.checkingInternet = false;
         }
 
     }
