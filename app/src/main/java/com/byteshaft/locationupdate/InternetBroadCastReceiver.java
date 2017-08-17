@@ -51,7 +51,8 @@ public class InternetBroadCastReceiver extends BroadcastReceiver {
             connection.connect();
             success = connection.getResponseCode() == 200;
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("Exception", e.getLocalizedMessage());
+            new CheckInternet().execute();
         }
         return success;
     }

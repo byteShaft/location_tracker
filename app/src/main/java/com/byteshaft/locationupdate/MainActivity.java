@@ -14,24 +14,19 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Button toggleButton;
+    private Button startTracking;
     private static final int MY_PERMISSIONS_REQESt_LOCATION = 0;
-    private static final int MY_PERMISSIONS_REQESt_PHONE_STATE = 1;
     public boolean foreground = false;
     private static MainActivity sInstance;
     private EditText deviceId;
-    private TelephonyManager telephony;
     private EditText enterpriseId;
 
     public static MainActivity getInstance() {
@@ -47,21 +42,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         deviceId = (EditText) findViewById(R.id.device_id);
         enterpriseId = (EditText) findViewById(R.id.enterprise_id);
         sInstance = this;
-        telephony = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-        toggleButton = (Button) findViewById(R.id.toggleButton);
-        toggleButton.setOnClickListener(this);
+        startTracking = (Button) findViewById(R.id.start_tracking);
+        startTracking.setOnClickListener(this);
         foreground = true;
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_PHONE_STATE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (AppGlobals.getDeviceId().equals("")) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.READ_PHONE_STATE},
-                        MY_PERMISSIONS_REQESt_PHONE_STATE);
-            }
-        } else {
-            deviceId.setText(telephony.getDeviceId());
-        }
         if (!AppGlobals.getDeviceId().equals("")) {
             deviceId.setText(AppGlobals.getDeviceId());
         }
@@ -73,14 +56,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (AppGlobals.isTracking() && LocationService.getInstance() == null) {
             if (locationEnabled()) {
                 if (LocationService.getInstance() == null) {
-                    AppGlobals.saveTackingState(true);
-                    toggleButton.setText(getResources().getString(R.string.stop_tracking));
-                    startService(new Intent(getApplicationContext(), LocationService.class));
+                    startLocationService();
                 }
             } else {
                 dialogForLocationEnableManually(this);
             }
         }
+    }
+
+    private void startLocationService() {
+        LocationService locationService = new LocationService(new ServiceEvents() {
+            @Override
+            public void onServiceStop() {
+                Log.i("MainActivity", "stop service");
+                stopLocationService();
+            }
+
+            @Override
+            public void onServiceStart() {
+                Log.i("MainActivity", "start service");
+                AppGlobals.saveTackingState(true);
+                startTracking.setText(getResources().getString(R.string.stop_tracking));
+            }
+        });
+        startService(new Intent(getApplicationContext(), locationService.getClass()));
+    }
+
+    private void stopLocationService() {
+        startTracking.setText(getResources().getString(R.string.start_tracking));
+        AppGlobals.saveTackingState(false);
     }
 
     @Override
@@ -94,9 +98,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onResume();
         foreground = true;
         if (!AppGlobals.isTracking()) {
-            toggleButton.setText(getResources().getString(R.string.start_tracking));
+            startTracking.setText(getResources().getString(R.string.start_tracking));
         } else {
-            toggleButton.setText(getResources().getString(R.string.stop_tracking));
+            startTracking.setText(getResources().getString(R.string.stop_tracking));
         }
     }
 
@@ -112,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .getSystemService(Context.LOCATION_SERVICE);
         boolean gps_enabled = false;
         boolean network_enabled = false;
-
         try {
             gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
         } catch (Exception ex) {
@@ -122,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
         } catch (Exception ex) {
         }
-
         return gps_enabled || network_enabled;
     }
 
@@ -153,8 +155,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == AppGlobals.LOCATION_ENABLE) {
-            if (locationEnabled() && LocationService.getInstance() == null) {
-                startService(new Intent(getApplicationContext(), LocationService.class));
+            if (locationEnabled() && LocationService.getInstance() == null && !AppGlobals.isTracking()) {
+                startLocationService();
             }
         }
     }
@@ -167,10 +169,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startService(new Intent(getApplicationContext(), LocationService.class));
-
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+                    startLocationService();
 
                 } else {
                     Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
@@ -178,19 +177,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // functionality that depends on this permission.
                 }
                 return;
-            }case MY_PERMISSIONS_REQESt_PHONE_STATE: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    AppGlobals.saveDeviceId(telephony.getDeviceId());
-                    deviceId.setText(telephony.getDeviceId());
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
-
-                } else {
-                    Toast.makeText(this, "permission denied", Toast.LENGTH_SHORT).show();
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-                }
             }
 
             // other 'case' lines to check for other
@@ -200,45 +186,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
-        if (AppGlobals.isTracking()) {
-            if (LocationService.getInstance() != null) {
-                AppGlobals.saveTackingState(false);
-                LocationService.getInstance().stopService();
-                toggleButton.setText(getResources().getString(R.string.start_tracking));
-            }
-            return;
-        }
-        if (deviceId.getText().toString().equals("") || enterpriseId.getText().toString().equals("")) {
+        if (deviceId.getText().toString().equals("") || enterpriseId.getText().toString().equals("") ||
+                deviceId.getText().toString().trim().isEmpty() || enterpriseId.getText().toString().isEmpty()) {
             Toast.makeText(sInstance, R.string.fill_details, Toast.LENGTH_SHORT).show();
             return;
         }
-        AppGlobals.saveEnterpriseId(enterpriseId.getText().toString());
-        if (!AppGlobals.isTracking()) {
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        MY_PERMISSIONS_REQESt_LOCATION);
-            } else {
-                if (locationEnabled()) {
-                    if (LocationService.getInstance() == null) {
-                        AppGlobals.saveTackingState(true);
-                        toggleButton.setText(getResources().getString(R.string.stop_tracking));
-                        startService(new Intent(getApplicationContext(), LocationService.class));
+        switch (view.getId()) {
+            case R.id.start_tracking:
+                if (!AppGlobals.isTracking()) {
+                    if (ContextCompat.checkSelfPermission(this,
+                            Manifest.permission.ACCESS_COARSE_LOCATION)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                                MY_PERMISSIONS_REQESt_LOCATION);
+                    } else {
+                        if (locationEnabled()) {
+                            if (LocationService.getInstance() == null) {
+                                startLocationService();
+                            }
+                        } else {
+                            dialogForLocationEnableManually(this);
+                        }
                     }
                 } else {
-                    dialogForLocationEnableManually(this);
+                    if (LocationService.getInstance() != null) {
+                        stopLocationService();
+                        LocationService.getInstance().stopService();
+
+                    }
                 }
-            }
-        } else {
-            if (LocationService.getInstance() != null) {
-                AppGlobals.saveTackingState(false);
-                LocationService.getInstance().stopService();
-                toggleButton.setText(getResources().getString(R.string.start_tracking));
-            }
 
+                break;
         }
-
+        AppGlobals.saveEnterpriseId(enterpriseId.getText().toString());
+        AppGlobals.saveDeviceId(deviceId.getText().toString());
     }
 }

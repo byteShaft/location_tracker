@@ -12,9 +12,8 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="@string/device_id"
-        android:background="@android:drawable/edit_text"
+        android:background="@drawable/custom_edit_text_background"
         android:layout_margin="5dp"
-        android:enabled="false"
         android:layout_centerHorizontal="true"
         />
 
@@ -25,21 +24,22 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:background="@android:drawable/edit_text"
+        android:background="@drawable/custom_edit_text_background"
         android:layout_margin="5dp"
         android:layout_centerHorizontal="true"
         />
 
 
     <Button
-        android:id="@+id/toggleButton"
+        android:id="@+id/start_tracking"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="15dp"
         android:textColor="@android:color/white"
         android:text="@string/start_tracking"
+        android:layout_alignParentBottom="true"
         android:background="@drawable/round_button"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="5dp"
-        android:layout_alignParentBottom="true"/>
+        android:layout_marginBottom="5dp"/>
+
 </RelativeLayout>

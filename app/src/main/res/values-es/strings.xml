@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rastreador</string>
+    <string name="start_tracking">Iniciar Rastreo</string>
+    <string name="device_id">identificador del vehículo</string>
+    <string name="enterprise_id">identificador de la empresa</string>
+    <string name="no_internet">Internet no disponible</string>
+    <string name="stop_tracking">Detener Rastreo</string>
+    <string name="fill_details">Por favor rellene los detalles</string>
+    <string name="tracking">Rastreando…</string>
+</resources>
